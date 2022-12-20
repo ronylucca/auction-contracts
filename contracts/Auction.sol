@@ -1,43 +1,43 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.9;
+import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
 contract Auction is ERC721URIStorage {
+    using Counters for Counters.Counter;
 
-  using Counters for Counters.Counter;
+    Counters.Counter private _tokenIds;
 
-  Counters.Counter private _tokenIds;
+    address payable owner;
 
-  address payable owner;
+    uint private _maxBidsAuction;
 
-  uint private _maxBidsAuction;
+    mapping(uint256 => ProductAuction) productAuctions;
 
-  mapping(uint256 => Auction) productAuctions;
-  
-  uint256 listPrice = 0.001 ether;
+    uint256 listPrice = 0.001 ether;
 
-  struct Auction {
-      uint256 productTokenId;
-      address payable seller;
-      address payable lastBidder; 
-      uint256 bestPrice;
-      uint bidPosition;
-      bool currentlyListed;
+    struct ProductAuction {
+        uint256 productTokenId;
+        address payable seller;
+        address payable lastBidder;
+        uint256 bestPrice;
+        uint bidPosition;
+        bool currentlyListed;
+    }
 
-  }
-
-  event AuctionInitialized (
+    event AuctionInitialized(
         uint256 indexed tokenId,
-        uuint256 minPrice,
+        uint256 minPrice,
         address seller,
-        bool currentlyListed,
-  
-  );
+        bool currentlyListed
+    );
 
-    event AuctionFinished (
+    event AuctionFinished(
         uint256 indexed tokenId,
         address seller,
         address buyer,
-        uint256 price,
+        uint256 price
     );
 
     constructor() ERC721("Auction", "AUCT") {
@@ -46,7 +46,10 @@ contract Auction is ERC721URIStorage {
     }
 
     //Product Creation
-    function createProductToken(string memory tokenURI, address seller) public returns (uint) {
+    function createProductToken(
+        string memory tokenURI,
+        address seller
+    ) public returns (uint) {
         require(owner == msg.sender, "Only owner can create token");
         //Increment the tokenId counter, which is keeping track of the number of minted NFTs
         _tokenIds.increment();
@@ -55,10 +58,8 @@ contract Auction is ERC721URIStorage {
         //Mint the NFT with tokenId newTokenId to the administration address
         _safeMint(msg.sender, newTokenId);
 
-        //Map the tokenId to the tokenURI (which is an IPFS URL with the NFT metadata)
         _setTokenURI(newTokenId, tokenURI);
 
-        //Helper function to update Global variables and emit an event
         createProductAuction(newTokenId, seller);
 
         return newTokenId;
@@ -66,7 +67,7 @@ contract Auction is ERC721URIStorage {
 
     function createProductAuction(uint256 tokenId, address seller) private {
         //Update the mapping of tokenId's to Token details, useful for retrieval functions
-        productAuctions[tokenId] = Auction(
+        productAuctions[tokenId] = ProductAuction(
             tokenId,
             payable(seller),
             payable(seller),
@@ -76,10 +77,16 @@ contract Auction is ERC721URIStorage {
         );
     }
 
-    function initializeAuction(string tokenId, uint256 initialPrice) public payable returns(Auction memory) {
+    function initializeAuction(
+        uint tokenId,
+        uint256 initialPrice
+    ) public payable returns (ProductAuction memory) {
         require(owner == msg.sender, "Only owner can create token");
-        require(msg.value == listPrice, "Amount for listing price is different");
-        
+        require(
+            msg.value == listPrice,
+            "Amount for listing price is different"
+        );
+
         //Just sanity check
         require(initialPrice > 0, "the price is negative");
 
@@ -88,39 +95,45 @@ contract Auction is ERC721URIStorage {
 
         emit AuctionInitialized(
             tokenId,
-            productAuctions[tokenId].seller,
-            productAuctions[tokenId].lastBidder,
             initialPrice,
+            productAuctions[tokenId].seller,
             true
         );
 
         return productAuctions[tokenId];
     }
 
-    function bid(string tokenId, uint256 bidPrice, address bidder) public payable returns(Auction memory) {
+    function bid(
+        uint tokenId,
+        uint256 bidPrice,
+        address bidder
+    ) public payable returns (ProductAuction memory) {
         require(owner == msg.sender, "Only owner can create token");
         //validates if The tokenId does exists and if it's listed
-        require(productAuctions[tokenId].currentlyListed, "No Listed Auction found");
+        require(
+            productAuctions[tokenId].currentlyListed,
+            "No Listed Product found"
+        );
         //Check if the new Bid price is higher than the last one
-        require(bidPrice > productAuctions[tokenId].bestPrice, "the price must be higher than the last Bid");
+        require(
+            bidPrice > productAuctions[tokenId].bestPrice,
+            "the price must be higher than the last Bid"
+        );
 
         productAuctions[tokenId].bestPrice = bidPrice;
         productAuctions[tokenId].lastBidder = payable(bidder);
         productAuctions[tokenId].bidPosition += 1;
 
-        if(productAuctions[tokenId].bidPosition == _maxBidsAuction){
+        if (productAuctions[tokenId].bidPosition == _maxBidsAuction) {
             executeSale(tokenId);
         }
 
         return productAuctions[tokenId];
     }
 
-    function executeSale(uint256 tokenId) private payable {
-        uint price = idToListedToken[tokenId].price;
-        address seller = idToListedToken[tokenId].seller;
-
+    function executeSale(uint256 tokenId) private {
         //Actually transfer the token to the new owner
-        _transfer(owner,productAuctions[tokenId].lastBidder, tokenId);
+        _transfer(owner, productAuctions[tokenId].lastBidder, tokenId);
         //approve the marketplace to sell NFTs on your behalf
         approve(owner, tokenId);
 
@@ -128,7 +141,9 @@ contract Auction is ERC721URIStorage {
         payable(owner).transfer(listPrice);
 
         //Transfer the proceeds from the sale to the seller of the NFT
-        payable(productAuctions[tokenId].seller).transfer(productAuctions[tokenId].bestPrice);
+        payable(productAuctions[tokenId].seller).transfer(
+            productAuctions[tokenId].bestPrice
+        );
 
         emit AuctionFinished(
             tokenId,

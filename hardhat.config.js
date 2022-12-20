@@ -15,7 +15,7 @@ console.log(GOERLI_URL);
  * @type import('hardhat/config').HardhatUserConfig
  */
 module.exports = {
-  solidity: "0.8.4",
+  solidity: "0.8.9",
   networks: {
     goerli: {
       url: GOERLI_URL,
