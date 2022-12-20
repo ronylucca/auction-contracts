@@ -129,5 +129,17 @@ contract Auction is ERC721URIStorage {
 
         //Transfer the proceeds from the sale to the seller of the NFT
         payable(productAuctions[tokenId].seller).transfer(productAuctions[tokenId].bestPrice);
+        
+         uint256 indexed tokenId,
+        address seller,
+        address buyer,
+        uint256 price,
+        
+        emit AuctionFinished(
+            tokenId,
+            productAuctions[tokenId].seller,
+            productAuctions[tokenId].lastBidder,
+            productAuctions[tokenId].bestPrice
+        );
     }
 }
