@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.9;
 import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
 contract Auction is ERC721URIStorage {
     using Counters for Counters.Counter;
+    using Strings for uint256;
 
     Counters.Counter private _tokenIds;
 
@@ -49,7 +51,7 @@ contract Auction is ERC721URIStorage {
     function createProductToken(
         string memory tokenURI,
         address seller
-    ) public returns (uint) {
+    ) public returns (string memory) {
         require(owner == msg.sender, "Only owner can create token");
         //Increment the tokenId counter, which is keeping track of the number of minted NFTs
         _tokenIds.increment();
@@ -62,7 +64,7 @@ contract Auction is ERC721URIStorage {
 
         createProductAuction(newTokenId, seller);
 
-        return newTokenId;
+        return newTokenId.toString();
     }
 
     function createProductAuction(uint256 tokenId, address seller) private {
@@ -151,5 +153,9 @@ contract Auction is ERC721URIStorage {
             productAuctions[tokenId].lastBidder,
             productAuctions[tokenId].bestPrice
         );
+    }
+
+    function getCurrentTokenId() public view returns (string memory) {
+        return _tokenIds.current().toString();
     }
 }
