@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
 contract Auction is ERC721URIStorage {
+    //, IERC721Receiver {
     using Counters for Counters.Counter;
     using Strings for uint256;
     Counters.Counter private _tokenIds;
@@ -18,7 +19,7 @@ contract Auction is ERC721URIStorage {
     struct ProductAuction {
         uint256 productTokenId;
         address payable seller;
-        address payable lastBidder;
+        address lastBidder;
         uint256 bestPrice;
         uint bidPosition;
         bool currentlyListed;
@@ -41,7 +42,7 @@ contract Auction is ERC721URIStorage {
 
     constructor() ERC721("Auction", "AUCT") {
         owner = payable(msg.sender);
-        maxBidsAuction = 10;
+        maxBidsAuction = 3;
         listPrice = 0.0001 ether;
     }
 
@@ -52,10 +53,11 @@ contract Auction is ERC721URIStorage {
         _tokenIds.increment();
         uint256 newTokenId = _tokenIds.current();
 
-        //Mint the NFT with newTokenId to the administration address
+        //Mint the NFT with newTokenId to the administrator wallet
+        //and approve contract to transfer on its behalf
         _safeMint(msg.sender, newTokenId);
         _setTokenURI(newTokenId, tokenURI);
-
+        _approve(address(this), newTokenId);
         createProductAuction(newTokenId, seller);
     }
 
@@ -105,7 +107,7 @@ contract Auction is ERC721URIStorage {
         uint256 bidPrice,
         address bidder
     ) public payable {
-        require(owner == msg.sender, "Only owner can create token");
+        require(owner == msg.sender, "Only owner can access this method");
         //validates if The tokenId does exists and if it's listed
         require(
             productAuctions[tokenId].currentlyListed,
@@ -126,20 +128,15 @@ contract Auction is ERC721URIStorage {
         }
     }
 
-    function executeSale(uint256 tokenId) private {
-        //Transfer the token to the new owner
+    function executeSale(uint256 tokenId) public payable {
+        require(owner == msg.sender, "Only owner can create token");
+
+        //Transfer the token to the new owner(already approved)
         _transfer(owner, productAuctions[tokenId].lastBidder, tokenId);
-        //approve the marketplace to sell NFTs on your behalf
-        approve(owner, tokenId);
 
         //Transfer the listing fee to the marketplace creator
         payable(owner).transfer(listPrice);
 
-        //Transfer the proceeds from the sale to the seller of the NFT
-        payable(productAuctions[tokenId].seller).transfer(
-            productAuctions[tokenId].bestPrice
-        );
-        //Update Auction to not listed
         productAuctions[tokenId].currentlyListed = false;
 
         emit AuctionFinished(

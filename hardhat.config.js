@@ -1,6 +1,6 @@
-// hardhat.config.js
-
+require("@nomiclabs/hardhat-waffle");
 require("@nomiclabs/hardhat-ethers");
+require('solidity-coverage')
 require("dotenv").config()
 
 // You need to export an object to set up your config
