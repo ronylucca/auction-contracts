@@ -8,17 +8,13 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 contract Auction is ERC721URIStorage {
     using Counters for Counters.Counter;
     using Strings for uint256;
-
     Counters.Counter private _tokenIds;
-
     address payable owner;
-
-    uint private _maxBidsAuction;
-
+    uint private maxBidsAuction;
     mapping(uint256 => ProductAuction) productAuctions;
+    uint256 listPrice;
 
-    uint256 listPrice = 0.001 ether;
-
+    //Flat structure related to Product, Bid and Auction
     struct ProductAuction {
         uint256 productTokenId;
         address payable seller;
@@ -28,6 +24,7 @@ contract Auction is ERC721URIStorage {
         bool currentlyListed;
     }
 
+    //Events updates about the Auction
     event AuctionInitialized(
         uint256 indexed tokenId,
         uint256 minPrice,
@@ -44,27 +41,22 @@ contract Auction is ERC721URIStorage {
 
     constructor() ERC721("Auction", "AUCT") {
         owner = payable(msg.sender);
-        _maxBidsAuction = 10;
+        maxBidsAuction = 10;
+        listPrice = 0.0001 ether;
     }
 
     //Product Creation
-    function createProductToken(
-        string memory tokenURI,
-        address seller
-    ) public returns (string memory) {
+    function createProductToken(string memory tokenURI, address seller) public {
         require(owner == msg.sender, "Only owner can create token");
         //Increment the tokenId counter, which is keeping track of the number of minted NFTs
         _tokenIds.increment();
         uint256 newTokenId = _tokenIds.current();
 
-        //Mint the NFT with tokenId newTokenId to the administration address
+        //Mint the NFT with newTokenId to the administration address
         _safeMint(msg.sender, newTokenId);
-
         _setTokenURI(newTokenId, tokenURI);
 
         createProductAuction(newTokenId, seller);
-
-        return newTokenId.toString();
     }
 
     function createProductAuction(uint256 tokenId, address seller) private {
@@ -82,16 +74,21 @@ contract Auction is ERC721URIStorage {
     function initializeAuction(
         uint tokenId,
         uint256 initialPrice
-    ) public payable returns (ProductAuction memory) {
+    ) public payable {
         require(owner == msg.sender, "Only owner can create token");
         require(
             msg.value == listPrice,
             "Amount for listing price is different"
         );
-
-        //Just sanity check
+        //checking if auction has been initialized
+        require(
+            productAuctions[tokenId].currentlyListed == false,
+            "This auction has already been started"
+        );
+        //asserting the initialPrice isn't negative
         require(initialPrice > 0, "the price is negative");
 
+        //updating struct to be listed
         productAuctions[tokenId].bestPrice = initialPrice;
         productAuctions[tokenId].currentlyListed = true;
 
@@ -101,15 +98,13 @@ contract Auction is ERC721URIStorage {
             productAuctions[tokenId].seller,
             true
         );
-
-        return productAuctions[tokenId];
     }
 
     function bid(
         uint tokenId,
         uint256 bidPrice,
         address bidder
-    ) public payable returns (ProductAuction memory) {
+    ) public payable {
         require(owner == msg.sender, "Only owner can create token");
         //validates if The tokenId does exists and if it's listed
         require(
@@ -126,15 +121,13 @@ contract Auction is ERC721URIStorage {
         productAuctions[tokenId].lastBidder = payable(bidder);
         productAuctions[tokenId].bidPosition += 1;
 
-        if (productAuctions[tokenId].bidPosition == _maxBidsAuction) {
+        if (productAuctions[tokenId].bidPosition == maxBidsAuction) {
             executeSale(tokenId);
         }
-
-        return productAuctions[tokenId];
     }
 
     function executeSale(uint256 tokenId) private {
-        //Actually transfer the token to the new owner
+        //Transfer the token to the new owner
         _transfer(owner, productAuctions[tokenId].lastBidder, tokenId);
         //approve the marketplace to sell NFTs on your behalf
         approve(owner, tokenId);
@@ -146,6 +139,8 @@ contract Auction is ERC721URIStorage {
         payable(productAuctions[tokenId].seller).transfer(
             productAuctions[tokenId].bestPrice
         );
+        //Update Auction to not listed
+        productAuctions[tokenId].currentlyListed = false;
 
         emit AuctionFinished(
             tokenId,
@@ -155,7 +150,23 @@ contract Auction is ERC721URIStorage {
         );
     }
 
+    //Gets and Updates
     function getCurrentTokenId() public view returns (string memory) {
         return _tokenIds.current().toString();
+    }
+
+    function getListPrice() public view returns (uint256) {
+        return listPrice;
+    }
+
+    function getAuction(
+        uint256 tokenId
+    ) public view returns (ProductAuction memory) {
+        return productAuctions[tokenId];
+    }
+
+    function updateListPrice(uint256 _listPrice) public payable {
+        require(owner == msg.sender, "Only owner can update listing price");
+        listPrice = _listPrice;
     }
 }
