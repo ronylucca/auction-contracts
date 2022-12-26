@@ -6,7 +6,7 @@ This project demonstrates an Auction full life cycle with Product Token Mint, Au
 
 ## Choose the step:
 
-- I am just checking out this contract integrating with nestJS/prisma backend api:
+### I am just checking out this contract integrating with nestJS/prisma backend api:
 
 Install dependencies and test. This contract is fully 100% tests covered.
 
@@ -16,7 +16,7 @@ npx hardhat test
 npx hardhat coverage
 ```
 
-## If you wanna run it from zero :
+### If you wanna run it from zero :
 
 - just set up credentials using .env file and run:
 
