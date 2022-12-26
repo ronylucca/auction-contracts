@@ -4,6 +4,8 @@ This project demonstrates a basic Hardhat use case. It comes with a sample contr
 
 Try running some of the following tasks:
 
+GOERLI Address: 0x65e97F989b29945199C208e7b1A402729F0B81dB
+
 ```shell
 npx hardhat help
 npx hardhat test

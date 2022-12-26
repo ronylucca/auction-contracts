@@ -42,7 +42,7 @@ contract Auction is ERC721URIStorage {
 
     constructor() ERC721("Auction", "AUCT") {
         owner = payable(msg.sender);
-        maxBidsAuction = 3;
+        maxBidsAuction = 10;
         listPrice = 0.0001 ether;
     }
 
@@ -77,7 +77,7 @@ contract Auction is ERC721URIStorage {
         uint tokenId,
         uint256 initialPrice
     ) public payable {
-        require(owner == msg.sender, "Only owner can create token");
+        require(owner == msg.sender, "Only owner can initialize auction");
         require(
             msg.value == listPrice,
             "Amount for listing price is different"
@@ -88,7 +88,7 @@ contract Auction is ERC721URIStorage {
             "This auction has already been started"
         );
         //asserting the initialPrice isn't negative
-        require(initialPrice > 0, "the price is negative");
+        require(initialPrice > 0, "the price is invalid");
 
         //updating struct to be listed
         productAuctions[tokenId].bestPrice = initialPrice;
@@ -165,5 +165,10 @@ contract Auction is ERC721URIStorage {
     function updateListPrice(uint256 _listPrice) public payable {
         require(owner == msg.sender, "Only owner can update listing price");
         listPrice = _listPrice;
+    }
+
+    function updateMaxBidNumber(uint256 _maxBidNumber) public payable {
+        require(owner == msg.sender, "Only owner can update maxBidNumber");
+        maxBidsAuction = _maxBidNumber;
     }
 }

@@ -9,8 +9,6 @@ require("dotenv").config()
 const GOERLI_URL = process.env.GOERLI_URL;
 const ADMIN_PRIVATE_KEY = process.env.ADMIN_PRIVATE_KEY;
 
-console.log(GOERLI_URL);
-
 /**
  * @type import('hardhat/config').HardhatUserConfig
  */
