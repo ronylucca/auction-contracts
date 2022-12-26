@@ -128,9 +128,7 @@ contract Auction is ERC721URIStorage {
         }
     }
 
-    function executeSale(uint256 tokenId) public payable {
-        require(owner == msg.sender, "Only owner can create token");
-
+    function executeSale(uint256 tokenId) private {
         //Transfer the token to the new owner(already approved)
         _transfer(owner, productAuctions[tokenId].lastBidder, tokenId);
 
@@ -152,19 +150,23 @@ contract Auction is ERC721URIStorage {
         return _tokenIds.current().toString();
     }
 
-    function getListPrice() public view returns (uint256) {
-        return listPrice;
-    }
-
     function getAuction(
         uint256 tokenId
     ) public view returns (ProductAuction memory) {
         return productAuctions[tokenId];
     }
 
+    function getListPrice() public view returns (uint256) {
+        return listPrice;
+    }
+
     function updateListPrice(uint256 _listPrice) public payable {
         require(owner == msg.sender, "Only owner can update listing price");
         listPrice = _listPrice;
+    }
+
+    function getMaxBidAuction() public view returns (uint256) {
+        return maxBidsAuction;
     }
 
     function updateMaxBidNumber(uint256 _maxBidNumber) public payable {

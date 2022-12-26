@@ -18,15 +18,13 @@ describe('Auction', function () {
     expect(listPrice).to.equal(ethers.utils.parseEther('0.0001'))
   }),
 
-    it('Should create ProductToken and verify creator token amount and auction struct', async function () {
-    
+    it('Should create and Mint ProductToken and verify creator NFT token amount and auction struct', async function () {
       const [owner, addr1] = await ethers.getSigners()
 
       //Mint ProductToken
       const createProductTx = await auctionContract
         .createProductToken('This is a new Product Token', owner.address)
       await createProductTx.wait()
-
       expect(await auctionContract.balanceOf(owner.address)).to.equal(1);
 
       //check if there is an auction struct
@@ -34,8 +32,7 @@ describe('Auction', function () {
 
     })
 
-  it('Should revert when try to create ProductToken', async function () {
-    
+  it('Should revert when try to create ProductToken', async function () { 
     const [owner, addr1] = await ethers.getSigners()
 
     //Mint ProductToken
@@ -45,11 +42,8 @@ describe('Auction', function () {
   })
 
   it('Should revert while trying to initialize Auction without Owner', async function () {
-    
     const [owner, addr1] = await ethers.getSigners()
-
     const initialPrice = ethers.utils.parseEther('0.0001');
-
     await expect(auctionContract.connect(addr1).initializeAuction(1, initialPrice,
       {
         value: ethers.utils.parseEther('0.0001'),
@@ -111,7 +105,6 @@ describe('Auction', function () {
         value: ethers.utils.parseEther('0.0001'),
       }))
       .to.be.revertedWith('This auction has already been started');
-
   })
 
 }),
@@ -164,7 +157,6 @@ describe('Auction', function () {
       await auctionContract.updateMaxBidNumber(3)
 
       //create Bids up to maximum 3
-
       bidPrice = ethers.utils.parseEther(`0.00021`);
       await auctionContract.bid(1, bidPrice, addr1.address)
     
@@ -180,13 +172,15 @@ describe('Auction', function () {
       expect(await auctionContract.balanceOf(owner.address)).to.equal(0);
       expect(await auctionContract.balanceOf(addr2.address)).to.equal(1);
     })
-
     
   }),
   describe('Config', function () {
-    it('Should update MaxBidNumber successfully', async function () {
-      
+    it('Should update MaxBidNumber successfully', async function () { 
       await expect(auctionContract.updateMaxBidNumber(3))
+    })
+
+    it('Should update MaxBidNumber successfully', async function () {
+      await expect(await auctionContract.getMaxBidAuction()).to.equal(3)
     })
 
     it('Should revert trying to update MaxBidNumber without permission', async function () {
@@ -196,7 +190,6 @@ describe('Auction', function () {
     })
 
     it('Should update ListPrice successfully', async function () {
-      
       const newListPrice = ethers.utils.parseEther('0.0001')
       await auctionContract.updateListPrice(newListPrice);
       const listPrice = await auctionContract.getListPrice();
@@ -208,7 +201,6 @@ describe('Auction', function () {
       const newListPrice = ethers.utils.parseEther('0.0001')
       await expect(auctionContract.connect(addr1).updateListPrice(newListPrice))
         .to.be.revertedWith('Only owner can update listing price');
-
     })
     
   })
