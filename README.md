@@ -1,6 +1,11 @@
-# Auction Hardhat Project
+<p align="center">
+  <img src="https://assets-global.website-files.com/60118ca1c2eab61d24bcf151/6329c748f1e3f02c29c9a2a8_BP%20-%20NA%2BSM%20-%201R%20-%20Full%20(2).png" width="200" alt="Auction Logo" /></a>
+</p>
 
-This project demonstrates an Auction full life cycle with Product Token Mint, Auction and Bid. It's simple and on going but testable and created mainly for techniques improvements.
+# Auction Hardhat Project Solidity
+
+This project is an Auction smart contract with full life cycle, NFT Token Mint, Auction and Bid.
+It's simple and on going but testable and created mainly for techniques improvements.
 
 - There is a contract running on Goerli already
 
@@ -25,3 +30,4 @@ npx hardhat run scripts/deploy.js --network goerli
 ```
 
 Once it is deployed, you can use the [Auction API project](https://github.com/ronylucca/auction-api) to integrates directly with this contract
+`Use the smart contract owner credentials private key on backend project as well to have the owner access of this contract`
