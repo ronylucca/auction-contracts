@@ -7,7 +7,7 @@
 This project is an Auction smart contract with full life cycle, NFT Token Mint, Auction and Bid.
 It's simple and on going but testable and created mainly for techniques improvements.
 
-- There is a contract running on Goerli already
+`There is a contract running on Goerli already : 0x9E48a079a47Bd70E70639B0bCA359D6613efe487`
 
 ## Choose the step:
 
