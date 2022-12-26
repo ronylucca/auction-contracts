@@ -21,7 +21,7 @@ npx hardhat coverage
 - just set up credentials using .env file and run:
 
 ```shell
-npx hardhat run scripts/deploy.js
+npx hardhat run scripts/deploy.js --network goerli
 ```
 
 Once it is deployed, you can use the [Auction API project](https://github.com/ronylucca/auction-api) to integrates directly with this contract
