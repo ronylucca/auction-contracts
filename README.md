@@ -11,7 +11,7 @@ It's simple and on going but testable and created mainly for techniques improvem
 
 ## Choose the step:
 
-### I am just checking out this contract integrating with nestJS/prisma backend api:
+### Just checking out with nestJS/prisma backend api:
 
 Install dependencies and test. This contract is fully 100% tests covered.
 
@@ -21,11 +21,12 @@ npx hardhat test
 npx hardhat coverage
 ```
 
-### If you wanna run it from zero :
+### If you want to deploy your own :
 
 - just set up credentials using .env file and run:
 
 ```shell
+npm install
 npx hardhat run scripts/deploy.js --network goerli
 ```
 
